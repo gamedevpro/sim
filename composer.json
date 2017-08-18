@@ -1,0 +1,10 @@
+{
+    "name": "gamedevpro/simbus",
+    "authors": [
+        {
+            "name": "Ilya Abrashkin",
+            "email": "iliacmd@yandex.ru"
+        }
+    ],
+    "require": {}
+}
