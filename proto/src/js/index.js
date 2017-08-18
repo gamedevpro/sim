@@ -1,14 +1,22 @@
+var AppModel = Backbone.Model.extend({});
+
+var App = new AppModel({
+	companies : []
+});
 
 var BussinessDay = Backbone.Model.extend({
 
 	intervalId : 0,
 
-	initialize : function (){
-	}
+	initialize : function () {
+	},
 
 	open : function () {
-		console.log('Day is open!')
-		this.intervalId = setInterval(this.work, 5000, this.get('clientsFlow'));
+		console.log('Day is open!');
+		var clientsFlow = this.get('clientsFlow');
+		var workDay = this.work(clientsFlow, this.renderCounter);
+		workDay();
+		this.intervalId = setInterval(workDay, 5000);
 	}, 
 
 	close : function () {
@@ -16,14 +24,21 @@ var BussinessDay = Backbone.Model.extend({
 		clearInterval(this.intervalId);
 	},
 
-	work : function (clientsFlow) {
-		var count = clientsFlow.get('count');
-		if (count) {
-			count--;
-			clientsFlow.set({count: count});
-			console.log(clientsFlow.get('count'));	
-		}
-	}
+	renderCounter : function (count) {
+		$('#clients_counter span').html(count);
+	},
+
+	work : function (clientsFlow, renderCounter) {
+
+		return function() {
+			var count = clientsFlow.get('count');
+			if (count) {
+				count--;
+				clientsFlow.set({count: count});			
+				renderCounter(count);
+			}			
+		};
+	},
 
 });
 
@@ -31,49 +46,63 @@ var ClientsFlow = Backbone.Model.extend({
 	count : 0,
 });
 
-var ButtonModel = Backbone.Model.extend({
-
+var BottomPanelModel = Backbone.Model.extend({
 });
 
-var ButtonSwitch = Backbone.View.extend({
+var BottomPanel = Backbone.View.extend({
 
 	events : {
-		'click' : function () {
-			this.model.set({
-				isOpen : !this.model.get('isOpen')
-			})
-		}
+		'click .slider' : 'open'
 	},
 
 	initialize : function () {
-		console.log('initialize');
-		this.model.on('change', this.render)
+		console.log('BottomPanel: initialize');
+		//this.model.on('change', this.render)
 	},
 
 	render : function (){
 
+	},
+
+	open : function () {
+		Store.trigger('OPEN_DAY', {
+			isOpen : !this.model.get('isOpen')
+		});
 	}
+});
+
+var RightPanel = Backbone.View.extend({
+
+	render : function () {
+
+	}, 
 
 });
 
+
 $(function(){
 
-	var runButtonModel = new ButtonModel({
-	 isOpen : false
+	var bottomPanelModel = new BottomPanelModel({
+		isOpen : false
 	});
 
-	var runButton = new ButtonSwitch({
-		model: runButtonModel,
-		el: '#open_close_day',
+	var bottomPanel = new BottomPanel({
+		model: bottomPanelModel,
+		el: '#bottom_panel',
+	});
+
+	var rightPanel = new RightPanel({
+		el: '#right_panel'
 	});
 
 	var clientsFlow = new ClientsFlow({
 		count: 10
-	})
+	});
 
-	var day = new BussinessDay();
-	day.set({clientsFlow: clientsFlow});
-
+	//App.businessDay = new BussinessDay({});	
+	//App.businessDay.set({clientsFlow: clientsFlow});
 
 });
+
+
 
